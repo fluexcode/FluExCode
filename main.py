@@ -1,12 +1,14 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+import os
 
 app = FastAPI()
 
 @app.get("/")
 async def home():
     with open("index.html", "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+        html = f.read()
+    return HTMLResponse(content=html)
 
 if __name__ == "__main__":
     import uvicorn
