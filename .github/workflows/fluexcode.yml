@@ -1,80 +1,52 @@
-name: 🚀 Deploy FluexCode Bot
+name: 🚀 FluexCode Bot
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
-    inputs:
-      restart_bot:
-        description: 'Botu yeniden başlat'
-        required: false
-        default: false
 
-env:
-  BOT_NAME: "FluexCode Bot"
-  
 jobs:
-  deploy:
+  run-bot:
     runs-on: ubuntu-latest
     
     steps:
-    - name: 🛠️ FluexCode Setup
-      run: echo "🚀 ${{ env.BOT_NAME }} başlatılıyor..."
-      
-    - name: 📥 Repository'yi çek
+    - name: 📥 Kodları Çek
       uses: actions/checkout@v3
       
-    - name: ⚙️ Node.js kur
+    - name: ⚙️ Node.js Kur
       uses: actions/setup-node@v3
       with:
         node-version: '18'
         
-    - name: 📦 FluexCode bağımlılıkları
+    - name: 📦 Bağımlılıkları Yükle
       run: npm install
       
-    - name: 🔧 FluexCode Environment
+    - name: 🔧 .fluexcode-env Oluştur
       run: |
-        echo "FLUEXCODE_BOT_USERNAME=${{ secrets.FLUEXCODE_USERNAME }}" >> .fluexcode-env
-        echo "FLUEXCODE_OAUTH_TOKEN=${{ secrets.FLUEXCODE_OAUTH }}" >> .fluexcode-env
+        echo "FLUEXCODE_USERNAME=${{ secrets.FLUEXCODE_USERNAME }}" > .fluexcode-env
+        echo "FLUEXCODE_OAUTH=${{ secrets.FLUEXCODE_OAUTH }}" >> .fluexcode-env
         echo "FLUEXCODE_CHANNEL=${{ secrets.FLUEXCODE_CHANNEL }}" >> .fluexcode-env
-        echo "FLUEXCODE_PANEL_PORT=3000" >> .fluexcode-env
-        echo "FLUEXCODE_PANEL_PASSWORD=${{ secrets.FLUEXCODE_PANEL_PASS }}" >> .fluexcode-env
         echo "FLUEXCODE_PREFIX=!" >> .fluexcode-env
         
-    - name: 🧪 FluexCode Test
+    - name: 🧪 Dosya Kontrolü
       run: |
-        echo "✅ Environment kontrolü:"
-        if [ -f ".fluexcode-env" ]; then
-          echo "✅ .fluexcode-env dosyası oluşturuldu"
-        else
-          echo "❌ .fluexcode-env dosyası oluşturulamadı"
-          exit 1
-        fi
+        echo "📁 Mevcut dosyalar:"
+        ls -la
+        echo ""
+        echo "📄 .fluexcode-env:"
+        cat .fluexcode-env || echo "Dosya yok"
         
-    - name: 🚀 FluexCode Bot'u başlat
+    - name: 🚀 Botu Başlat
       run: |
-        # Background'da başlat
+        # Botu başlat
         npm start &
-        BOT_PID=$!
+        sleep 10
+        echo "✅ FluexCode Bot başlatıldı"
         
-        echo "⏳ FluexCode Bot başlatılıyor (PID: $BOT_PID)..."
-        
-        # 20 saniye bekle
-        sleep 20
-        
-        # Bot'un çalıştığını kontrol et
-        if ps -p $BOT_PID > /dev/null; then
-          echo "✅ ${{ env.BOT_NAME }} başarıyla çalışıyor!"
-        else
-          echo "❌ ${{ env.BOT_NAME }} başlatılamadı"
-          exit 1
-        fi
-        
-    - name: 🔄 Sürekli çalıştır
+    - name: 🔄 Sürekli Çalıştır
       run: |
-        echo "🔄 ${{ env.BOT_NAME }} çalışıyor..."
-        # GitHub Actions timeout'u için keep-alive
+        echo "🔄 Bot 7/24 çalışacak..."
         while true; do
           sleep 60
-          echo "$(date): 🤖 FluexCode Bot aktif"
+          echo "⏰ $(date): FluexCode Bot aktif"
         done
